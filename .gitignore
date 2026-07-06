@@ -1,0 +1,16 @@
+# Build artifacts / deps
+node_modules/
+dist/
+**/.build/
+
+# Local database & index (never distribute)
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+
+# macOS
+.DS_Store
+
+# Editor / local
+*.code-workspace
+.claude/settings.local.json

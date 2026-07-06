@@ -1,0 +1,28 @@
+{
+  "name": "lifemail-mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "build:calendar-helper": "cd calendar-helper && swift build -c release",
+    "test:tools": "node dist/test-harness.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "better-sqlite3": "^11.7.0",
+    "glob": "^10.4.0",
+    "gray-matter": "^4.0.3",
+    "mailparser": "^3.7.1",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/mailparser": "^3.4.6",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}
