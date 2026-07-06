@@ -13,7 +13,7 @@ network.
 ## What you get
 
 - **Email tools** (`mcp__lifemail__*`): full-text search, read a message, read a whole thread (de-duplicated),
-  filter by category/mailbox/sender/date, and — optionally — LLM summarization and "log emails to Obsidian."
+  filter by category/mailbox/sender/date, and save an email into an Obsidian note.
 - **Two skills** that load in every Claude Code session:
   - `lifemail` — how to drive the email tools well (triage rules, thread handling, cross-referencing notes).
   - `obsidian` — drive your Obsidian vault via Obsidian's official CLI (search/read/write/tags/links/tasks).
@@ -28,7 +28,6 @@ network.
 | **Claude Code** | using it | The `claude` CLI installs and runs the server. |
 | **Full Disk Access** | email | The one manual step — see Install. Without it the mail index is silently empty. |
 | Obsidian 1.12.7+ w/ CLI | notes features | Optional. Settings → General → "Command line interface". |
-| Ollama | 4 LLM tools | Optional. Off by default. |
 
 ## Install
 
@@ -96,8 +95,6 @@ your machine.
 
 - **`sync-status` shows 0 mail rows / "empty inbox"** → Full Disk Access isn't granted, or you didn't restart
   the host app after granting it.
-- **Server won't connect right after enabling Ollama** → Ollama isn't running. Unset `LLM_PROVIDER` (email
-  works without it) or start Ollama.
 - **`better_sqlite3.node ... NODE_MODULE_VERSION` error** → your Node version changed. Run
   `cd ~/.lifemail && npm rebuild better-sqlite3`.
 - **Notes tools error / "vault not found"** → point them at your vault by re-running the installer with your
@@ -106,5 +103,4 @@ your machine.
 ## Privacy
 
 Everything is local: Apple Mail is read from disk, indexed into a SQLite file under `~/.personal-index`, and
-exposed only to your local Claude Code. No email content is sent anywhere. The optional LLM features use a
-**local** Ollama instance.
+exposed only to your local Claude Code. No email content is sent anywhere.

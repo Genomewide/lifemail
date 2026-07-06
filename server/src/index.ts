@@ -10,7 +10,6 @@ import { getDb, closeDb } from './db/database.js';
 import { syncMail } from './ingest/mail.js';
 import { syncObsidian } from './ingest/obsidian.js';
 import { usageTracker } from './usage-tracker.js';
-import { validateLlmStartup } from './llm/provider.js';
 
 // Tool handlers
 import { handleSyncStatus } from './tools/sync-status.js';
@@ -26,10 +25,6 @@ import { handleCalendarSync } from './tools/calendar-sync.js';
 import { handleCalendarSearch } from './tools/calendar-search.js';
 import { handleCalendarGet } from './tools/calendar-get.js';
 import { handleUsageStats } from './tools/usage-stats.js';
-import { handleLlmSummarize } from './tools/llm-summarize.js';
-import { handleNlToolPlan } from './tools/nl-tool-plan.js';
-import { handleMailSummary } from './tools/mail-summary.js';
-import { handleMailToObsidian } from './tools/mail-to-obsidian.js';
 
 // ---------- Tool definitions ----------
 
@@ -210,7 +205,7 @@ CROSS-REFERENCE: When working with email on a topic, also check Obsidian for rel
   },
   {
     name: 'obsidian-write',
-    description: `Create or append to an Obsidian markdown note. Low-level primitive — use this directly when you want to write a single note, or let mail-to-obsidian compose it for you.
+    description: `Create or append to an Obsidian markdown note. Low-level primitive — use this directly when you want to write a single note.
 
 PATH: vault-relative (e.g. "01_Notes/AIM+HI.md" or "00_Inbox/New Idea.md"). Absolute paths are rejected. Path traversal (../) is rejected. The .md extension is added if missing.
 
@@ -239,44 +234,6 @@ After write, the file is immediately re-indexed into SQLite so obsidian-search r
     },
   },
   {
-    name: 'mail-to-obsidian',
-    description: `Group recent emails by ongoing project (LLM-inferred) and write a dated summary to the matching Obsidian project page. Requires LLM_PROVIDER=ollama.
-
-PIPELINE: mail-search → escalate to full body for emails that look actionable → load existing project pages in 01_Notes/ as anchors → LLM clusters emails by project and writes a bullet summary → for each cluster, append "### YYYY-MM-DD" under an "Email Log" heading on the target page.
-
-TARGET RESOLUTION: when the LLM matches an existing 01_Notes/ page, that page is appended to. When no match is found, a draft is created at 00_Inbox/<project>.md with frontmatter type: project, status: draft — the user promotes it manually.
-
-DEDUP: each cluster passes mailIds as processedMessageIds; emails already in the target's frontmatter.processed_mail_ids are skipped. Re-running the same query is a no-op.
-
-DRY RUN: defaults to dryRun=true. Inspect the proposed clusters and target paths before committing. Pass dryRun=false to actually write.
-
-CONFIDENCE: clusters below 0.4 confidence (and any "Misc" cluster) are dropped into the unmatched list rather than written.`,
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        query: { type: 'string', description: 'Optional FTS query (omit to filter-only)' },
-        maxEmails: { type: 'number', description: 'Max emails to consider (default 30, hard cap 60)', default: 30 },
-        vault: { type: 'string', description: 'Vault name or absolute path (defaults to first OBSIDIAN_VAULT_ROOTS entry)' },
-        dryRun: { type: 'boolean', description: 'Stage writes without executing (default: true)', default: true },
-        mode: { type: 'string', enum: ['auto', 'snippet_only', 'selective_dive'], description: 'Escalation policy (default: auto)', default: 'auto' },
-        filters: {
-          type: 'object',
-          properties: {
-            startUtc: { type: 'number' },
-            endUtc: { type: 'number' },
-            fromEmail: { type: 'string' },
-            mailbox: { type: 'string' },
-            hasAttachments: { type: 'boolean' },
-            isRead: { type: 'boolean' },
-            category: { type: 'string', enum: ['primary', 'transactions', 'updates', 'promotions'] },
-            excludeMailboxes: { type: 'array', items: { type: 'string' } },
-            excludeCategories: { type: 'array', items: { type: 'string' } },
-          },
-        },
-      },
-    },
-  },
-  {
     name: 'usage-stats',
     description: 'Returns detailed token usage and estimated cost breakdown for this session. Shows per-tool stats, cumulative totals, and recent call history.',
     inputSchema: {
@@ -289,57 +246,6 @@ CONFIDENCE: clusters below 0.4 confidence (and any "Misc" cluster) are dropped i
       },
     },
   },
-  {
-    name: 'llm-summarize',
-    description: 'Summarize text with the configured local LLM provider (set LLM_PROVIDER=ollama).',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        task: { type: 'string', description: 'Summary instruction, such as action-focused email summary' },
-        content: { type: 'string', description: 'Text to summarize' },
-        maxChars: { type: 'number', description: 'Maximum output length in characters', default: 6000 },
-      },
-      required: ['content'],
-    },
-  },
-  {
-    name: 'mail-summary',
-    description: 'Policy-driven email summarization workflow: snippet triage, selective full reads, bounded local LLM summary, and graceful fallback.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        query: { type: 'string', description: 'Optional search query. Omit to summarize by filters only.' },
-        mode: { type: 'string', enum: ['auto', 'snippet_only', 'selective_dive'], description: 'Summary mode', default: 'auto' },
-        maxEmails: { type: 'number', description: 'Max emails to consider (capped by policy)', default: 20 },
-        filters: {
-          type: 'object',
-          properties: {
-            startUtc: { type: 'number' },
-            endUtc: { type: 'number' },
-            fromEmail: { type: 'string' },
-            mailbox: { type: 'string' },
-            hasAttachments: { type: 'boolean' },
-            isRead: { type: 'boolean' },
-            category: { type: 'string', enum: ['primary', 'transactions', 'updates', 'promotions'] },
-            excludeMailboxes: { type: 'array', items: { type: 'string' } },
-            excludeCategories: { type: 'array', items: { type: 'string' } },
-          },
-        },
-      },
-    },
-  },
-  {
-    name: 'nl-tool-plan',
-    description: 'Use the configured local LLM provider to convert a natural-language request into a safe, bounded MCP tool plan.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        request: { type: 'string', description: 'Natural language request to plan' },
-        maxSteps: { type: 'number', description: 'Maximum number of tool steps to return', default: 4 },
-      },
-      required: ['request'],
-    },
-  },
 ];
 
 // ---------- Main ----------
@@ -349,7 +255,6 @@ async function main() {
 
   // Initialize database eagerly
   getDb();
-  await validateLlmStartup();
 
   const server = new Server(
     { name: 'personal-index', version: '0.1.0' },
@@ -407,24 +312,12 @@ async function main() {
         case 'obsidian-write':
           result = handleObsidianWrite(a);
           break;
-        case 'mail-to-obsidian':
-          result = await handleMailToObsidian(a);
-          break;
         case 'usage-stats':
           if (a.model) usageTracker.setModel(a.model);
           if (a.provider && a.providerModel) {
             usageTracker.setRuntimeModel(a.provider, a.providerModel, a.isEstimated ?? true);
           }
           result = handleUsageStats();
-          break;
-        case 'llm-summarize':
-          result = await handleLlmSummarize(a);
-          break;
-        case 'mail-summary':
-          result = await handleMailSummary(a);
-          break;
-        case 'nl-tool-plan':
-          result = await handleNlToolPlan(a, TOOLS.map((t) => ({ name: t.name, description: t.description })));
           break;
         default:
           return {

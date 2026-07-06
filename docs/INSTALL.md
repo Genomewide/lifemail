@@ -67,9 +67,6 @@ moment.
 - **Obsidian notes tools / `obsidian` skill:** needs Obsidian **1.12.7+** with the CLI enabled
   (Settings → General → "Command line interface") and the app running. Verify with `obsidian version` and
   `obsidian vault`.
-- **LLM features** (`mail-summary`, `mail-to-obsidian`, `llm-summarize`, `nl-tool-plan`): install Ollama,
-  pull a model, then re-register with `-e LLM_PROVIDER=ollama`. **Warning:** if `LLM_PROVIDER=ollama` is set
-  but Ollama isn't running, the **whole server refuses to boot**. Leave it unset unless Ollama is up.
 - **Calendar:** build the Swift helper (`cd ~/.lifemail && npm run build:calendar-helper`), grant EventKit
   access (`calendar-helper/.build/release/calendar-helper --request-access`), and run it with `--serve`.
 
@@ -77,7 +74,6 @@ moment.
 
 - **Empty inbox / `sync-status` shows 0 mail rows** → Full Disk Access (step 3) not granted, or the host
   app wasn't restarted.
-- **Server won't connect after enabling Ollama** → Ollama isn't running; unset `LLM_PROVIDER` or start Ollama.
 - **`Error: better_sqlite3.node ... NODE_MODULE_VERSION`** → Node version changed since install; run
   `cd ~/.lifemail && npm rebuild better-sqlite3`.
 - **`node: command not found` when the server launches** → the registration used a bare `node`. Re-run

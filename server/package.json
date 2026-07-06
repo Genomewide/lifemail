@@ -8,8 +8,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "build:calendar-helper": "cd calendar-helper && swift build -c release",
-    "test:tools": "node dist/test-harness.js"
+    "build:calendar-helper": "cd calendar-helper && swift build -c release"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",

@@ -6,11 +6,10 @@ description: Interact with the user's Obsidian vault from the terminal via Obsid
 # Obsidian (official CLI)
 
 Drive the user's Obsidian vault through Obsidian's first-party command-line interface — the
-`obsidian` command, registered by the desktop app. This skill replaces the older
-`personal-index` `obsidian-search` / `obsidian-get` / `obsidian-write` / `obsidian-sync`
-MCP tools with one Bash-driven tool that exposes ~100 commands. (The `personal-index`
-mail/calendar tools and `mail-to-obsidian` are NOT covered here — keep using those for
-email/calendar work.)
+`obsidian` command, registered by the desktop app. Prefer this one Bash-driven tool (which
+exposes ~100 commands) over the `lifemail` `obsidian-search` / `obsidian-get` / `obsidian-write`
+/ `obsidian-sync` MCP tools whenever the Obsidian app is available. (The `lifemail` mail and
+calendar tools are NOT covered here — use the `lifemail` skill for email/calendar work.)
 
 ## Preflight — run this before using the CLI
 

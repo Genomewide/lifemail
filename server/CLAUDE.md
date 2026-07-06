@@ -33,10 +33,7 @@ npm run test:tools             # node dist/test-harness.js (smoke against the li
   `**/*.emlx` / `.partial.emlx`; category enrichment joins Apple's read-only `Envelope Index`). No IMAP,
   no EventKit for mail. `src/ingest/obsidian.ts` indexes markdown vaults. Calendar ingest talks to the
   Swift helper over HTTP.
-- **Tools:** one handler per file in `src/tools/`. All are read-only **except** `obsidian-write` and
-  `mail-to-obsidian` (which write notes).
-- **LLM:** `src/llm/provider.ts` gates the four LLM-backed tools behind `LLM_PROVIDER=ollama`. With the
-  default `LLM_PROVIDER=none` those tools return a clean error and everything else works.
+- **Tools:** one handler per file in `src/tools/`. All are read-only **except** `obsidian-write`.
 - **Usage:** every response is wrapped with a `_usage` block by `src/usage-tracker.ts`.
 
 ## Configuration (environment variables)
@@ -45,11 +42,7 @@ npm run test:tools             # node dist/test-harness.js (smoke against the li
 |-----|---------|-------|
 | `PERSONAL_INDEX_HOME` | `$HOME/.personal-index` | DB home. **Do not pass a literal `~`** — Node does not expand it. Omit the var to get the correct default. |
 | `OBSIDIAN_VAULT_ROOTS` | `$HOME/Obsidian` | Comma-separated vault paths for the obsidian-* MCP tools. Set to your vault, or leave unset if you drive notes via the Obsidian CLI skill instead. |
-| `LLM_PROVIDER` | `none` | Set to `ollama` ONLY if Ollama is installed and running — otherwise the server refuses to boot. |
-| `OLLAMA_BASE_URL` | `http://127.0.0.1:11434` | |
-| `OLLAMA_MODEL_PLANNER` / `OLLAMA_MODEL_SUMMARIZER` | `gpt-oss:20b` | |
 | `CAL_HELPER_HOST` / `CAL_HELPER_PORT` | `127.0.0.1` / `17831` | Calendar sidecar address. |
-| `SUMMARY_*` | see `src/summarization/policy.ts` | Summarization budgets/caps. |
 
 ## Technical notes
 
@@ -58,6 +51,4 @@ npm run test:tools             # node dist/test-harness.js (smoke against the li
 - **Apple Mail requires Full Disk Access** for the *host process* (the terminal app or the Claude
   desktop app running the server). Without it, `mail-sync` returns **zero rows silently** — it does not
   error. This is the first thing to check if the index is empty.
-- **LLM tools (`mail-summary`, `mail-to-obsidian`, `llm-summarize`, `nl-tool-plan`) are optional.**
-  All mail/calendar/obsidian search/read/write works without them.
 - After source changes: `npm run build`, then reload the MCP server in your client.
